@@ -1,0 +1,117 @@
+-- Consulta del usuario que más tiempo ha estado logueado
+WITH Sesiones AS (
+    SELECT
+        Logins.User_id,
+        Logins.fecha AS FechaLogins,
+        MIN(logout.fecha) AS FechaLogout
+    FROM Logins Logins
+    JOIN Logins logout
+        ON Logins.User_id = logout.User_id
+        AND logout.TipoMov = 0
+        AND logout.fecha > Logins.fecha
+    WHERE Logins.TipoMov = 1
+        AND NOT EXISTS (
+            SELECT 1
+            FROM Logins l2
+            WHERE l2.User_id = logout.User_id
+              AND l2.TipoMov = 0
+              AND l2.fecha > Logins.fecha AND l2.fecha < logout.fecha
+        )
+    GROUP BY Logins.User_id, Logins.fecha
+)
+SELECT TOP 1
+    User_id,
+    CONCAT(
+        SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) / 86400, ' días, ',
+        DATEPART(HOUR, DATEADD(SECOND, SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) % 86400, 0)), ' horas, ',
+        DATEPART(MINUTE, DATEADD(SECOND, SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) % 86400, 0)), ' minutos, ',
+        DATEPART(SECOND, DATEADD(SECOND, SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) % 86400, 0)), ' segundos'
+    ) AS TiempoTotal
+FROM Sesiones
+GROUP BY User_id
+ORDER BY SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) DESC;
+
+
+
+
+
+
+-- Consulta del usuario que menos tiempo ha estado logueado
+WITH Sesiones AS (
+    SELECT
+        Logins.User_id,
+        Logins.fecha AS FechaLogins,
+        MIN(logout.fecha) AS FechaLogout
+    FROM Logins Logins
+    JOIN Logins logout
+        ON Logins.User_id = logout.User_id
+        AND logout.TipoMov = 0
+        AND logout.fecha > Logins.fecha
+    WHERE Logins.TipoMov = 1
+        AND NOT EXISTS (
+            SELECT 1
+            FROM Logins l2
+            WHERE l2.User_id = logout.User_id
+              AND l2.TipoMov = 0
+              AND l2.fecha > Logins.fecha AND l2.fecha < logout.fecha
+        )
+    GROUP BY Logins.User_id, Logins.fecha
+)
+SELECT TOP 1
+    User_id,
+    CONCAT(
+        SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) / 86400, ' días, ',
+        DATEPART(HOUR, DATEADD(SECOND, SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) % 86400, 0)), ' horas, ',
+        DATEPART(MINUTE, DATEADD(SECOND, SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) % 86400, 0)), ' minutos, ',
+        DATEPART(SECOND, DATEADD(SECOND, SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) % 86400, 0)), ' segundos'
+    ) AS TiempoTotal
+FROM Sesiones
+GROUP BY User_id
+ORDER BY SUM(DATEDIFF(SECOND, FechaLogins, FechaLogout)) ASC;
+
+
+
+
+
+
+
+-- Promedio de logueo por usuario por mes
+WITH Sesiones AS (
+    SELECT
+        Logins.User_id,
+        Logins.fecha AS FechaLogins,
+        MIN(logout.fecha) AS FechaLogout
+    FROM Logins Logins
+    JOIN Logins logout
+        ON Logins.User_id = logout.User_id
+        AND logout.TipoMov = 0
+        AND logout.fecha > Logins.fecha
+    WHERE Logins.TipoMov = 1
+        AND NOT EXISTS (
+            SELECT 1
+            FROM Logins l2
+            WHERE l2.User_id = logout.User_id
+              AND l2.TipoMov = 0
+              AND l2.fecha > Logins.fecha AND l2.fecha < logout.fecha
+        )
+    GROUP BY Logins.User_id, Logins.fecha
+),
+Promedios AS (
+    SELECT
+        User_id,
+        FORMAT(FechaLogins, 'yyyy-MM') AS Mes,
+        DATEDIFF(SECOND, FechaLogins, FechaLogout) AS DuracionSegundos
+    FROM Sesiones
+)
+SELECT
+    User_id,
+    Mes,
+    CONCAT(
+        AVG(DuracionSegundos) / 86400, ' días, ',
+        DATEPART(HOUR, DATEADD(SECOND, AVG(DuracionSegundos) % 86400, 0)), ' horas, ',
+        DATEPART(MINUTE, DATEADD(SECOND, AVG(DuracionSegundos) % 86400, 0)), ' minutos, ',
+        DATEPART(SECOND, DATEADD(SECOND, AVG(DuracionSegundos) % 86400, 0)), ' segundos'
+    ) AS TiempoPromedio
+FROM Promedios
+GROUP BY User_id, Mes
+ORDER BY User_id, Mes;

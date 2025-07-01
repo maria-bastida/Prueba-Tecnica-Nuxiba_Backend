@@ -1,0 +1,6 @@
+@CCenterApi_HostAddress = http://localhost:5098
+
+GET {{CCenterApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

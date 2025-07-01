@@ -1,0 +1,28 @@
+### GET /api/Logins ###
+No body required. Just send GET to /api/Logins
+
+
+### POST /api/Logins ###
+{
+  "user_id": 1,
+  "extension": 0,
+  "tipoMov": 0,
+  "fecha": "2025-07-01T21:05:09.600Z"
+}
+
+
+### PUT /api/Logins/{id} ###
+{
+  "extension": 137,
+  "tipoMov": -1,
+  "fecha": "2025-07-01T20:36:07"
+}
+
+
+### DELETE /api/Logins/{id} ###
+No body required. Just send DELETE to /api/Logins/{id}
+
+
+### GET /api/Reports/csv ###
+No body required. Just send GET to /api/Reports/csv
+
