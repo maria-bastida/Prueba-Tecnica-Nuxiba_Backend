@@ -1,0 +1,133 @@
+
+# Prueba Técnica Backend - Maria Bastida
+
+Este repositorio contiene una solución en .NET 8 y SQL Server que expone una API RESTful para gestionar logins y logouts de usuarios, realizar consultas , y generar un reporte CSV con el total de horas trabajadas por usuario.
+
+---
+
+## Requisitos
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+- [Docker](https://www.docker.com/)
+- SQL Server Management Studio (opcional) o Azure Data Studio
+- Postman (opcional, para pruebas)
+
+---
+
+##  Instrucciones para levantar el proyecto
+
+## 1. Levantar el contenedor de SQL Server
+
+Ejecuta el siguiente comando en tu terminal para crear un contenedor con SQL Server 2019:
+
+```bash
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong!Passw0rd" -p 1433:1433 --name sqlserver -d mcr.microsoft.com/mssql/server:2019-latest
+```
+
+## 2. Conectar la base de datos
+
+Conéctate al contenedor usando alguna de estas herramientas:
+
+- **Servidor:** `localhost`
+- **Puerto:** `1433`
+- **Usuario:** `sa`
+- **Contraseña:** `YourStrong!Passw0rd`
+
+Crea una base de datos con el nombre que tú desees (ej. `CCenterDb`).
+
+---
+
+## 3. Configurar la conexión en el proyecto
+
+Edita el archivo `appsettings.json` del proyecto y ajusta la cadena de conexión según el nombre de tu base de datos:
+
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=localhost,1433;Database=CCenterDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;"
+}
+```
+
+---
+
+## 4. Ejecutar migraciones y crear las tablas
+
+Abre la terminal en la raíz del proyecto y ejecuta:
+
+```bash
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
+Esto creará las tablas necesarias en la base de datos.
+
+---
+
+## 5. Ejecutar la API
+
+Corre la aplicación con:
+
+```bash
+dotnet run
+```
+
+La API estará disponible en:  
+`http://localhost:5000` (o el puerto que indique la consola)
+
+---
+
+## 6. Endpoints disponibles
+
+### Logins
+
+- `GET /api/Logins` — Listar todos los logins
+- `GET /api/Logins/{id}` — Obtener un login por ID
+- `POST /api/Logins` — Crear un login o logout
+- `PUT /api/Logins/{id}` — Actualizar un login existente
+- `DELETE /api/Logins/{id}` — Eliminar un login
+
+### Reporte CSV
+
+- `GET /api/Reports/csv` — Generar y descargar el archivo CSV con:
+  - Login del usuario
+  - Nombre completo
+  - Área
+  - Total de horas trabajadas
+
+El archivo será descargable desde el navegador o cliente HTTP (como Postman).
+
+---
+
+## 7. Probar la API con Postman
+
+Puedes importar el archivo `ApiPostmanCollection.json` incluido en este repositorio para realizar pruebas rápidamente.
+
+---
+
+## 8. Cargar datos desde archivos CSV (usuarios, logins, áreas)
+
+1. Abre SQL Server Management Studio o Azure Data Studio
+2. Haz clic derecho en la base de datos `CCenterDb` y selecciona "Import Flat File"
+3. Selecciona el archivo `.csv` correspondiente (por ejemplo, `ccUsers.csv`, `ccloglogin.csv`, `ccRIACat_Areas.csv`)
+4. Asegúrate de mapear correctamente las columnas con los campos de tus tablas.
+5. Finaliza el asistente para importar los datos.
+
+---
+
+## Validaciones implementadas
+
+- No se permite registrar un login si ya hay uno sin logout.
+- Solo se permiten registros de login/logout para usuarios existentes (`ccUsers`).
+- Las fechas deben ser válidas.
+
+---
+
+## Estructura del proyecto
+
+```
+/Api
+  /Controllers
+  /DTOs
+  /Models
+  /Data
+  appsettings.json
+  Program.cs
